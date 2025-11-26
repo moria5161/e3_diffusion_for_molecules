@@ -166,6 +166,7 @@ else:
     mode = 'online' if args.online else 'offline'
 kwargs = {'entity': args.wandb_usr, 'name': args.exp_name, 'project': 'e3_diffusion', 'config': args,
           'settings': wandb.Settings(_disable_stats=True), 'reinit': True, 'mode': mode}
+kwargs['mode'] = 'disabled'
 wandb.init(**kwargs)
 wandb.save('*.txt')
 
