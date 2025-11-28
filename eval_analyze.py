@@ -42,7 +42,8 @@ def analyze_and_save(args, eval_args, device, generative_model,
     for i in range(int(n_samples/batch_size)):
         nodesxsample = nodes_dist.sample(batch_size)
         one_hot, charges, x, node_mask = sample(
-            args, device, generative_model, dataset_info, prop_dist=prop_dist, nodesxsample=nodesxsample)
+            args, device, generative_model, dataset_info, prop_dist=prop_dist, nodesxsample=nodesxsample,
+            sample_method=eval_args.sample_method, steps=eval_args.steps, eta=eval_args.eta)
 
         molecules['one_hot'].append(one_hot.detach().cpu())
         molecules['x'].append(x.detach().cpu())
@@ -56,7 +57,7 @@ def analyze_and_save(args, eval_args, device, generative_model,
         if save_to_xyz:
             id_from = i * batch_size
             qm9_visualizer.save_xyz_file(
-                join(eval_args.model_path, 'eval/analyzed_molecules/'),
+                join(eval_args.eval_dir, 'analyzed_molecules/'),
                 one_hot, charges, x, dataset_info, id_from, name='molecule',
                 node_mask=node_mask)
 
@@ -119,13 +120,32 @@ def main():
                         help='Specify model path')
     parser.add_argument('--save_to_xyz', type=eval, default=False,
                         help='Should save samples to xyz files.')
+    parser.add_argument('--sample_method', type=str, default='standard',
+                        help='Sampling method: standard or ddim')
+    parser.add_argument('--steps', type=int, default=100,
+                        help='Number of steps for DDIM sampling')
+    parser.add_argument('--eta', type=float, default=0.0,
+                        help='Eta for DDIM sampling')
 
     eval_args, unparsed_args = parser.parse_known_args()
 
     assert eval_args.model_path is not None
 
+    import datetime
+    current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    eval_args.eval_dir = join(eval_args.model_path, f'eval_{current_time}')
+    if not os.path.exists(eval_args.eval_dir):
+        os.makedirs(eval_args.eval_dir)
+
     with open(join(eval_args.model_path, 'args.pickle'), 'rb') as f:
         args = pickle.load(f)
+
+    # Save run arguments
+    with open(join(eval_args.eval_dir, 'run_log.txt'), 'w') as f:
+        f.write(f"Run time: {current_time}\n")
+        f.write("Evaluation Arguments (eval_analyze.py):\n")
+        for arg, value in vars(eval_args).items():
+            f.write(f"{arg}: {value}\n")
 
     # CAREFUL with this -->
     if not hasattr(args, 'normalization_factor'):
@@ -138,7 +158,7 @@ def main():
     args.device = device
     dtype = torch.float32
     utils.create_folders(args)
-    print(args)
+    # print(args) # 打印训练参数
 
     # Retrieve QM9 dataloaders
     dataloaders, charge_scale = dataset.retrieve_dataloaders(args)
@@ -188,7 +208,7 @@ def main():
     print(f'Final test nll {test_nll}')
 
     print(f'Overview: val nll {val_nll} test nll {test_nll}', stability_dict)
-    with open(join(eval_args.model_path, 'eval_log.txt'), 'w') as f:
+    with open(join(eval_args.eval_dir, 'eval_log.txt'), 'w') as f:
         print(f'Overview: val nll {val_nll} test nll {test_nll}',
               stability_dict,
               file=f)

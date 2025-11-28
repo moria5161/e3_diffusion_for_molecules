@@ -48,17 +48,24 @@ class EGNN_dynamics_QM9(nn.Module):
 
     def _forward(self, t, xh, node_mask, edge_mask, context):
         bs, n_nodes, dims = xh.shape
-        h_dims = dims - self.n_dims
+        h_dims = dims - self.n_dims        
         edges = self.get_adj_matrix(n_nodes, bs, self.device)
         edges = [x.to(self.device) for x in edges]
         node_mask = node_mask.view(bs*n_nodes, 1)
         edge_mask = edge_mask.view(bs*n_nodes*n_nodes, 1)
         xh = xh.view(bs*n_nodes, -1).clone() * node_mask
+        # Assuming bs=64, n_nodes=29, dims=9
+        # node_mask: [1856, 1]
+        # edge_mask: [53824, 1]
+        # xh (flattened): [1856, 9]
+
         x = xh[:, 0:self.n_dims].clone()
+        # x: [1856, 3]
         if h_dims == 0:
             h = torch.ones(bs*n_nodes, 1).to(self.device)
         else:
             h = xh[:, self.n_dims:].clone()
+            # h: [1856, 6]
 
         if self.condition_time:
             if np.prod(t.size()) == 1:
@@ -68,7 +75,9 @@ class EGNN_dynamics_QM9(nn.Module):
                 # t is different over the batch dimension.
                 h_time = t.view(bs, 1).repeat(1, n_nodes)
                 h_time = h_time.view(bs * n_nodes, 1)
+                # h_time: [1856, 1]
             h = torch.cat([h, h_time], dim=1)
+            # h (with time): [1856, 7]
 
         if context is not None:
             # We're conditioning, awesome!
@@ -94,7 +103,6 @@ class EGNN_dynamics_QM9(nn.Module):
         if self.condition_time:
             # Slice off last dimension which represented time.
             h_final = h_final[:, :-1]
-
         vel = vel.view(bs, n_nodes, -1)
 
         if torch.any(torch.isnan(vel)):

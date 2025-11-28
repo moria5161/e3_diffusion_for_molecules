@@ -25,7 +25,7 @@ qm9_with_h = {
                   0, 0, 0, 0,
                   0,
                   0, 0],
-    'colors_dic': ['#FFFFFF99', 'C7', 'C0', 'C3', 'C1'],
+    'colors_dic': ['#FFFFFF99', 'C7', 'C0', 'C3', 'C1'],  # 分别对应 H, C, N, O, F
     'radius_dic': [0.46, 0.77, 0.77, 0.77, 0.77],
     'with_h': True}
     # 'bond1_radius': {'H': 31, 'C': 76, 'N': 71, 'O': 66, 'F': 57},

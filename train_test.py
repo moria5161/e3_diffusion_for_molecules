@@ -25,6 +25,13 @@ def train_epoch(args, loader, epoch, model, model_dp, model_ema, ema, device, dt
         one_hot = data['one_hot'].to(device, dtype)
         charges = (data['charges'] if args.include_charges else torch.zeros(0)).to(device, dtype)
 
+        # Shapes assuming batch_size=64, n_nodes=29:
+        # x: [64, 29, 3]
+        # node_mask: [64, 29, 1]
+        # edge_mask: [64 * 29 * 29, 1] (flattened in collate)
+        # one_hot: [64, 29, 5]
+        # charges: [64, 29, 1]
+
         x = remove_mean_with_mask(x, node_mask)
 
         if args.augment_noise > 0:

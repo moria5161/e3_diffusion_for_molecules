@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug QM9 Flow",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/main_qm9.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--exp_name", "debug_flow_test",
+                "--n_epochs", "2",
+                "--batch_size", "16",
+                "--no_wandb",
+                "--n_stability_samples", "5",
+                "--diffusion_steps", "1000",
+                "--test_epochs", "1",
+                "--num_workers", "0",
+                "--brute_force", "False"
+            ]
+        }
+    ]
+}
