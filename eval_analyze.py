@@ -62,10 +62,13 @@ def analyze_and_save(args, eval_args, device, generative_model,
                 node_mask=node_mask)
 
     molecules = {key: torch.cat(molecules[key], dim=0) for key in molecules}
+    total_time = time.time() - start_time
+    print(f'Total generation time for {n_samples} samples: {total_time:.2f} seconds')
+    
     stability_dict, rdkit_metrics = analyze_stability_for_molecules(
         molecules, dataset_info)
 
-    return stability_dict, rdkit_metrics
+    return stability_dict, rdkit_metrics, total_time
 
 
 def test(args, flow_dp, nodes_dist, device, dtype, loader, partition='Test', num_passes=1):
@@ -177,7 +180,7 @@ def main():
     generative_model.load_state_dict(flow_state_dict)
 
     # Analyze stability, validity, uniqueness and novelty
-    stability_dict, rdkit_metrics = analyze_and_save(
+    stability_dict, rdkit_metrics, total_time = analyze_and_save(
         args, eval_args, device, generative_model, nodes_dist,
         prop_dist, dataset_info, n_samples=eval_args.n_samples,
         batch_size=eval_args.batch_size_gen, save_to_xyz=eval_args.save_to_xyz)
@@ -209,10 +212,8 @@ def main():
 
     print(f'Overview: val nll {val_nll} test nll {test_nll}', stability_dict)
     with open(join(eval_args.eval_dir, 'eval_log.txt'), 'w') as f:
-        print(f'Overview: val nll {val_nll} test nll {test_nll}',
-              stability_dict,
-              file=f)
-
+        f.write(f'Total generation time for {eval_args.n_samples} samples: {total_time:.2f} seconds\n')
+        f.write(f'Overview: val nll {val_nll} test nll {test_nll} {stability_dict}\n')
 
 if __name__ == "__main__":
     main()
