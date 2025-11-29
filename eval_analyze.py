@@ -43,7 +43,7 @@ def analyze_and_save(args, eval_args, device, generative_model,
         nodesxsample = nodes_dist.sample(batch_size)
         one_hot, charges, x, node_mask = sample(
             args, device, generative_model, dataset_info, prop_dist=prop_dist, nodesxsample=nodesxsample,
-            sample_method=eval_args.sample_method, steps=eval_args.steps, eta=eval_args.eta)
+            sample_method=eval_args.sample_method, steps=eval_args.steps, eta=eval_args.eta, rho=eval_args.rho)
 
         molecules['one_hot'].append(one_hot.detach().cpu())
         molecules['x'].append(x.detach().cpu())
@@ -129,6 +129,8 @@ def main():
                         help='Number of steps for DDIM sampling')
     parser.add_argument('--eta', type=float, default=0.0,
                         help='Eta for DDIM sampling')
+    parser.add_argument('--rho', type=float, default=1.0,
+                        help='Rho parameter for sampling')
 
     eval_args, unparsed_args = parser.parse_known_args()
 

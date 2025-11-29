@@ -928,7 +928,8 @@ class EnVariationalDiffusion(torch.nn.Module):
 
     # 尝试写一个基于DDIM中跳跃采样的版本, 以加快采样速度
     @torch.no_grad()
-    def sample_ddim(self, n_samples, n_nodes, node_mask, edge_mask, context, fix_noise=False, steps=100, eta=0.0):
+    def sample_ddim(self, n_samples, n_nodes, node_mask, edge_mask, 
+                    context, fix_noise=False, steps=100, eta=0.0, rho=1.0):
         """
         从生成模型中采样, ddim版本。
         """
@@ -944,7 +945,7 @@ class EnVariationalDiffusion(torch.nn.Module):
 
 
         times = torch.linspace(1.0, 0.0, steps + 1, device=z.device)
-
+        times = times ** rho
         for i in range(0, steps): 
             t_val = times[i]
             s_val = times[i + 1]
