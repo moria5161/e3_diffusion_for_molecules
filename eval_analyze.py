@@ -59,7 +59,7 @@ def analyze_and_save(args, eval_args, device, generative_model,
             qm9_visualizer.save_xyz_file(
                 join(eval_args.eval_dir, 'analyzed_molecules/'),
                 one_hot, charges, x, dataset_info, id_from, name='molecule',
-                node_mask=node_mask)
+                node_mask=node_mask, max_save=10)
 
     molecules = {key: torch.cat(molecules[key], dim=0) for key in molecules}
     total_time = time.time() - start_time
