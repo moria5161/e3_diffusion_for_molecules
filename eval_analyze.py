@@ -216,6 +216,8 @@ def main():
     with open(join(eval_args.eval_dir, 'eval_log.txt'), 'w') as f:
         f.write(f'Total generation time for {eval_args.n_samples} samples: {total_time:.2f} seconds\n')
         f.write(f'Overview: val nll {val_nll} test nll {test_nll} {stability_dict}\n')
+        if rdkit_metrics is not None:
+            f.write(f'Validity: {rdkit_metrics[0]:.4f}, Uniqueness: {rdkit_metrics[1]:.4f}, Novelty: {rdkit_metrics[2]:.4f}\n')
 
 if __name__ == "__main__":
     main()
